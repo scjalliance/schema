@@ -141,7 +141,12 @@ func (d *Decoder) decode(v reflect.Value, path string, parts []pathPart,
 			return nil
 		} else if conv := d.cache.conv[t]; conv != nil {
 			if value := conv(values[len(values)-1]); value.IsValid() {
-				v.Set(value)
+				if value.Kind() == reflect.String && value.String() == "[[[ERASE]]]" {
+					// FIXME: this is a hack to inject erasability while letting simply empty values stay ignored
+					v.SetString("")
+				} else {
+					v.Set(value)
+				}
 			} else {
 				return ConversionError{path, -1}
 			}
